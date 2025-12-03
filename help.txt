@@ -1,1 +1,27 @@
-Help Text here!
+This app is used to combine a user selected image and a randomly generated background. 
+The app uses a prompt provided by the user to select a random background from 
+Google's Custom Search API search results.
+ 
+If you want to cancel an option, type "!cancel"
+ 
+Generate Image 
+    - Make sure to input a valid file directory
+    - Search results may improve if you put "background" at the end of the prompt.
+        - Example of a prompt: "desert background"
+Resize Image 
+    - Scales image based on user width and height
+    - Make sure to enter valid numbers of pixels
+        - Has to be a non-zero number!
+Grayscale Image 
+    - Turns the image into a black and white image 
+Preview Image 
+    - Opens current image in a new window
+Save Image 
+    - Saves the final image at a file directory
+    - Make sure the output directory is valid!
+Restart 
+    - Clears the current image 
+    - Use this after saving the image
+Quit 
+    - Quits the program
+ 
