@@ -32,7 +32,10 @@ image_save_ms = Client(port=IMAGE_SAVE_PORT)
 
 def save_image(input_path, output_path, output_name, quality="low"):
     if os.path.exists(output_path):
-        print("Replacing...")
+        response = input(f"The file '{output_path}' already exists. Overwrite? (y/n): ").strip().lower()
+        if response != "y":
+            print("Image not saved.")
+            return
 
     response = image_save_ms.send_json({
         "command": "convert",
@@ -126,22 +129,103 @@ def mono_image(output_path="temp.jpg"):
         })
     return response
 
-def main():
+def client_test():
     # Low Quality Test
     result = insert_into_random_background("small.png", "green hills background")
     resize_image(result["output"], 500, 500)
     mono_image(result["output"])
     my_path = save_image(result["output"], PROJECT_DIR, "my_image.jpg", "low")
-    img = Image.open(my_path)
-    img.show()
+    if my_path:
+        img = Image.open(my_path)
+        img.show()
 
     # High Quality Test
     result = insert_into_random_background("small.png", "beach background")
     resize_image(result["output"], 1280, 720)
     my_path = save_image(result["output"], PROJECT_DIR, "my_image_second.jpg", "high")
-    img = Image.open(my_path)
-    img.show()
+    if my_path:
+        img = Image.open(my_path)
+        img.show()
     read_file("test.txt")
+
+def get_background():
+    user_query = ""
+    while True:
+        user_query = input("- Enter background prompt > ").strip().lower()
+        if user_query:
+            return user_query
+        
+def get_small_image():
+    user_query = ""
+    while True:
+        user_query = input("- Enter small image directory > ").strip().lower()
+        if user_query:
+            if os.path.exists(user_query):
+                return user_query
+            elif user_query == "!cancel":
+                return "!cancel"
+            else:
+                print(f"{user_query} does not exist!")
+
+def get_size(prompt):
+    user_query = ""
+    while True:
+        user_query = input(f"- {prompt} > ").strip().lower()
+        if user_query:
+            try:
+                user_query = int(user_query) 
+            except ValueError:
+                print("Enter a valid number!")
+                continue
+            if user_query <= 0:
+                print("Enter a valid size!")
+            else:
+                return user_query
+            
+
+def main():
+    if os.path.exists("temp.jpg"):
+        try:
+            os.remove("temp.jpg")
+        except OSError as e:
+            print(f"Error deleting temp file': {e}")
+
+    user_response = None
+    print("Welcome to Random Image Generator!")
+    while True:
+        print("Options:")
+        print("(1) - Generate Image")
+        print("(2) - Edit Image Size")
+        print("(3) - Apply Monochrome Filter")
+        print("(p) - Preview Image")
+        print("(s) - Save Image")
+        print("(r) - Restart")
+        print("(c) - Clear Images")
+        print("(h) - Help & Info")
+        print("(q) - Quit")
+        user_response = input("Enter your response > ").strip().lower()
+
+        match user_response:
+            case "1":
+                small_image = get_small_image()
+                if small_image == "!cancel":
+                    continue
+                query = get_background()
+                if query == "!cancel":
+                    continue
+                insert_into_random_background(small_image, query)
+            case "2":
+                if os.path.exists("temp.jpg"):
+                    width = get_size("Enter width (px):")
+                    height = get_size("Enter height (px):")
+                    resize_image(width=width, height=height) 
+                else:
+                    print("Generate an image first!")
+            case "q":
+                print("Exiting app...")
+                break 
+            case _:
+                print(f"Unknown command: {user_response}")
 
 if __name__ == "__main__":
     main()
