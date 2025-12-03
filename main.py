@@ -31,8 +31,9 @@ image_edit_ms = Client(port=IMAGE_EDIT_PORT)
 image_save_ms = Client(port=IMAGE_SAVE_PORT)
 
 def save_image(input_path, output_path, output_name, quality="low"):
-    if os.path.exists(output_path):
-        response = input(f"The file '{output_path}' already exists. Overwrite? (y/n): ").strip().lower()
+    joined_path = os.path.join(output_path, output_name)
+    if os.path.exists(joined_path):
+        response = input(f"The file '{joined_path}' already exists. Overwrite? (y/n): ").strip().lower()
         if response != "y":
             print("Image not saved.")
             return
@@ -53,7 +54,7 @@ def save_image(input_path, output_path, output_name, quality="low"):
                 print(f"Error deleting temp file': {e}")
     else:
         raise ValueError(f"Error converting image!: {response}")
-    return os.path.join(output_path, output_name)
+    return joined_path
 
 def insert_into_random_background(small_path, bg_query):
     small_img = Image.open(small_path)
@@ -148,10 +149,10 @@ def client_test():
         img.show()
     read_file("test.txt")
 
-def get_background():
+def get_string(prompt):
     user_query = ""
     while True:
-        user_query = input("- Enter background prompt > ").strip().lower()
+        user_query = input(f"- {prompt} > ").strip().lower()
         if user_query:
             return user_query
         
@@ -193,34 +194,88 @@ def main():
     user_response = None
     print("Welcome to Random Image Generator!")
     while True:
+        print()
         print("Options:")
-        print("(1) - Generate Image")
-        print("(2) - Edit Image Size")
-        print("(3) - Apply Monochrome Filter")
+        print("(g) - Generate Image")
+        print("(e) - Resize Image")
+        print("(m) - Grayscale Image")
         print("(p) - Preview Image")
         print("(s) - Save Image")
         print("(r) - Restart")
-        print("(c) - Clear Images")
         print("(h) - Help & Info")
         print("(q) - Quit")
         user_response = input("Enter your response > ").strip().lower()
 
         match user_response:
-            case "1":
+            case "g":
                 small_image = get_small_image()
                 if small_image == "!cancel":
                     continue
-                query = get_background()
+                query = get_string("Enter background prompt")
                 if query == "!cancel":
                     continue
                 insert_into_random_background(small_image, query)
-            case "2":
+            case "e":
                 if os.path.exists("temp.jpg"):
                     width = get_size("Enter width (px):")
                     height = get_size("Enter height (px):")
                     resize_image(width=width, height=height) 
                 else:
                     print("Generate an image first!")
+            case "m":
+                if get_string("Are you sure? Grayscale cannot be undone. (y/n)") == "y":
+                    if os.path.exists("temp.jpg"):
+                        result = mono_image()
+                        if result and result["status"] == "success":
+                            print("Grayscale applied!")
+                        else:
+                            print("Failed to apply grayscale!")
+                    else:
+                        print("Generate an image first!")
+            case "p":
+                if os.path.exists("temp.jpg"):
+                    img = Image.open("temp.jpg")
+                    img.show()
+                else:
+                    print("Generate an image first!")
+            case "s":
+                if os.path.exists("temp.jpg"):
+                    directory = input("- Enter a directory > ").strip().lower()
+                    if directory == "":
+                        directory = PROJECT_DIR
+                    elif directory == "!cancel":
+                        continue
+                    elif not os.path.exists(directory):
+                        print("Enter a valid directory!")
+                        continue
+                    image_name = get_string("Enter image name")
+                    if image_name == "!cancel":
+                        continue 
+                    quality = get_string("Enter image quality (high/low)")
+                    if quality == "!cancel":
+                        continue
+                    elif quality == "high" or quality == "h":
+                        quality = "high"
+                    elif quality == "low" or quality == "l":
+                        quality = "low"
+                    else:
+                        quality = "low"
+                    my_path = save_image("temp.jpg", directory, image_name + ".jpg", quality)
+                    if my_path and get_string("Preview image? (y/n)") == "y":
+                        if my_path and os.path.exists(my_path):
+                            img = Image.open(my_path)
+                            img.show()
+                else:
+                    print("Generate an image first!")
+            case "r":
+                if get_string("Are you sure? Unsaved progress will be deleted. (y/n)") == "y":
+                    if os.path.exists("temp.jpg"):
+                        try:
+                            os.remove("temp.jpg")
+                        except OSError as e:
+                            print(f"Error deleting temp file': {e}")
+            case "h":
+                print("Help Info")
             case "q":
                 print("Exiting app...")
                 break 
