@@ -274,6 +274,7 @@ def main():
                         except OSError as e:
                             print(f"Error deleting temp file': {e}")
             case "h":
+                print()
                 print(read_file("help.txt"))
             case "q":
                 print("Exiting app...")
