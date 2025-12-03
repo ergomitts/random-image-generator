@@ -183,7 +183,6 @@ def get_size(prompt):
             else:
                 return user_query
             
-
 def main():
     if os.path.exists("temp.jpg"):
         try:
@@ -275,7 +274,7 @@ def main():
                         except OSError as e:
                             print(f"Error deleting temp file': {e}")
             case "h":
-                print("Help Info")
+                print(read_file("help.txt"))
             case "q":
                 print("Exiting app...")
                 break 
