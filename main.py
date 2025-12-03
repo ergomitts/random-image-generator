@@ -127,10 +127,18 @@ def mono_image(output_path="temp.jpg"):
     return response
 
 def main():
+    # Low Quality Test
     result = insert_into_random_background("small.png", "green hills background")
     resize_image(result["output"], 500, 500)
     mono_image(result["output"])
     my_path = save_image(result["output"], PROJECT_DIR, "my_image.jpg", "low")
+    img = Image.open(my_path)
+    img.show()
+
+    # High Quality Test
+    result = insert_into_random_background("small.png", "beach background")
+    resize_image(result["output"], 1280, 720)
+    my_path = save_image(result["output"], PROJECT_DIR, "my_image_second.jpg", "high")
     img = Image.open(my_path)
     img.show()
     read_file("test.txt")
